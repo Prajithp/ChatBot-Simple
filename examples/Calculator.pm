@@ -14,6 +14,8 @@ sub bot {
 }
 
 sub load_bot {
+    context $bot '';
+
     pattern $bot qr{(\w+)\s*\=\s*(\d+)} => sub {
         my ($input,$param) = @_;
         $var{$param->{':1'}} = $param->{':2'};
@@ -32,7 +34,8 @@ sub load_bot {
           : $op eq '-' ? $n1 - $n2
           : $op eq '*' ? $n1 * $n2
           : $op eq '/' ? $n1 / $n2
-                       : "I don't know how to calculate that!";
+          :              "I don't know how to calculate that!";
     };
 }
+
 1;

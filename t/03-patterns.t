@@ -31,13 +31,15 @@ for my $test (@test) {
 # test if setup worked
 my $patterns = $bot->patterns();
 
-my $expected = [
-    {
-        'pattern'  => 'what is your name',
-        'response' => 'my name is chatbot',
-        'code'   => undef
-    }
-];
+my $expected = {
+    '' => [
+        {
+            'pattern'  => 'what is your name',
+            'response' => 'my name is chatbot',
+            'code'     => undef
+        }
+    ]
+};
 
 cmp_deeply( $patterns, $expected ) or warn Dumper($patterns);
 

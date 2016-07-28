@@ -29,13 +29,15 @@ for my $test (@test) {
 
 my $transforms = $bot->transforms();
 
-my $expected = [
-    {
-        'pattern'  => 'hello',
-        'transform' => 'hi',
-        'code'   => undef
-    }
-];
+my $expected = {
+    '' => [
+        {
+            'pattern'   => 'hello',
+            'transform' => 'hi',
+            'code'      => undef
+        }
+    ]
+};
 
 cmp_deeply( $transforms, $expected ) or warn Dumper($transforms);
 

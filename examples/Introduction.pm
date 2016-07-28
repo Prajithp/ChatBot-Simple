@@ -14,21 +14,25 @@ sub bot {
 }
 
 sub load_bot {
+    context $bot '';
+
     transform $bot 'hello' => 'hi';
 
     pattern $bot 'hi' => sub {
       my ($input, $param) = @_;
-      if (!$mem{name}) {
-        $mem{topic} = 'name';
+      if ($bot->context ne 'name') {
+        context $bot 'name';
         return "hi! what's your name?";
       }
       return;
     };
 
+    context $bot 'name';
+
     pattern $bot "my name is :name" => sub {
       my ($input,$param) = @_;
       $mem{name} = $param->{':name'};
-      $mem{topic} = 'how_are_you';
+      context $bot 'how_are_you';
       return "Hello, :name! How are you?";
     };
 
@@ -36,13 +40,15 @@ sub load_bot {
 
     pattern $bot 'bye' => 'bye!';
 
+    context $bot 'how_are_you';
+
     pattern $bot 'fine' => 'great!';
 
     pattern $bot qr{^(\w+)$} => sub {
       my ($input,$param) = @_;
-      if ($mem{topic} eq 'name') {
+      if ($bot->context eq 'name') {
         $mem{name} = $param->{':1'};
-        $mem{topic} = 'how_are_you';
+        context $bot 'how_are_you';
         return "Hello, $mem{name}! How are you?";
       }
       return;

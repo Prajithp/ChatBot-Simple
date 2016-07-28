@@ -9,9 +9,9 @@ use ChatBot::Simple;
 use Introduction;
 use Calculator;
 
-# TODO: use Module::Pluggable to load knowledge automatically
-
 my $bot = ChatBot::Simple->new;
+
+context $bot '';
 
 Introduction->bot($bot);
 Calculator->bot($bot);
@@ -22,5 +22,5 @@ while (my $input = <>) {
 
   my $response = $bot->process($input);
 
-  print "$response\n\n> ";
+  print "$response\n\n" . $bot->context ."> ";
 }
