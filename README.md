@@ -24,24 +24,24 @@ FEATURES
 Simple pattern/responses
 ------------------------
 
-	pattern $bot 'hello' => 'hi!';
+	pattern 'hello' => 'hi!';
 
 Multiple (random) responses
 ---------------------------
 
-	pattern $bot 'hello' => [ 'hi!', 'hello!', 'wazzzzup!' ];
+	pattern 'hello' => [ 'hi!', 'hello!', 'wazzzzup!' ];
 
 Named parameters
 ----------------
 
-	pattern $bot "my name is :name" => "hello, :name!";
+	pattern "my name is :name" => "hello, :name!";
 
 Code execution
 --------------
 
 	my %mem;
 
-	pattern $bot "my name is :name" => sub {
+	pattern "my name is :name" => sub {
 		my ($str,$param) = @_;
 
 		$mem{name} = $param->':name';
@@ -54,7 +54,7 @@ Multiple named parameters
 
 	my %var;
 
-	pattern $bot "define :variable as :value" => sub {
+	pattern "define :variable as :value" => sub {
 		my ($str,$param) = @_;
 
 		my $variable = $param->{':variable'};
@@ -68,7 +68,7 @@ Multiple named parameters
 Regular expressions
 -------------------
 
-	pattern $bot qr{what is (\d+) ([+-/*]) (\d+)} => sub {
+	pattern qr{what is (\d+) ([+-/*]) (\d+)} => sub {
 		my ($str,$param) = @_;
 
 		my ($n1,$op,$n2) = ($param->{1}, $param->{2}, $param->{3});
@@ -83,13 +83,13 @@ Transformations
 Transformations can be used to normalize input, and are performed
 before the pattern matching:
 
-	transform $bot "I'm"    => "I am"
-	transform $bot "you're" => "you are";
-	transform $bot "what's" => "what is";
+	transform "I'm"    => "I am"
+	transform "you're" => "you are";
+	transform "what's" => "what is";
 
 They can use parameters as well:
 
-	transform $bot "I am called :name" => "my name is :name";
+	transform "I am called :name" => "my name is :name";
 
 (See more examples in the "t/" directory.)
 

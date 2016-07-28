@@ -9,18 +9,13 @@ use ChatBot::Simple;
 use Introduction;
 use Calculator;
 
-my $bot = ChatBot::Simple->new;
-
-context $bot '';
-
-Introduction->bot($bot);
-Calculator->bot($bot);
+context '';
 
 print "> ";
 while (my $input = <>) {
   chomp $input;
 
-  my $response = $bot->process($input);
+  my $response = process $input;
 
-  print "$response\n\n" . $bot->context ."> ";
+  print "$response\n\n" . context . "> ";
 }

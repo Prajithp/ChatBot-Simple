@@ -3,13 +3,16 @@ package ChatBot::Simple;
 use strict;
 use warnings;
 use Data::Dumper;
+use Exporter qw( import );
 
 use base qw( Class::Accessor );
 
 our $VERSION = '0.01';
+our @EXPORT = qw( context pattern transform process );
+
+my $singleton;
 
 __PACKAGE__->mk_ro_accessors(qw( patterns transforms ));
-__PACKAGE__->mk_accessors(qw( context ));
 
 sub new {
     my ($class) = shift;
@@ -17,6 +20,8 @@ sub new {
 }
 
 sub pattern {
+    @_ = get_right_object(@_);
+warn @_;
     my ($self, $pattern, @rest) = @_;
 
     my $code = ref $rest[0] eq 'CODE' ? shift @rest : undef;
@@ -31,6 +36,7 @@ sub pattern {
 }
 
 sub transform {
+    @_ = get_right_object(@_);
     my ($self, @expr) = @_;
 
     my $transform_to = pop @expr;
@@ -98,6 +104,7 @@ sub replace_vars {
 }
 
 sub process_transform {
+    @_ = get_right_object(@_);
     my ($self, $str) = @_;
 
     for my $tr (@{ $self->{transforms}{$self->{context}} }) {
@@ -120,6 +127,7 @@ sub process_transform {
 }
 
 sub process_pattern {
+    @_ = get_right_object(@_);
     my ($self, $input) = @_;
 
     for my $pt (@{ $self->{patterns}{$self->{context}} }) {
@@ -152,10 +160,37 @@ sub process_pattern {
 }
 
 sub process {
-  my ($self, $input) = @_;
-  my $tr  = $self->process_transform($input);
-  my $res = $self->process_pattern($tr);
-  return $res;
+    @_ = get_right_object(@_);
+    my ($self, $input) = @_;
+    my $tr  = $self->process_transform($input);
+    my $res = $self->process_pattern($tr);
+    return $res;
+}
+
+sub get_right_object {
+    # This checks @_. If the first parameter is a reference to an
+    # object, we pass that along. If not, we use the singleton
+    # object.
+    my $maybe_me = $_[0];
+
+    if (ref($maybe_me) eq __PACKAGE__) {
+        return @_;
+    }
+
+    if (! defined $singleton) {
+        $singleton = __PACKAGE__->new;
+    }
+    return($singleton, @_);
+}
+
+sub context {
+    @_ = get_right_object(@_);
+
+    my ($self, $ctx) = @_;
+    if (defined $ctx) {
+        $self->{context} = $ctx;
+    }
+    return $self->{context};
 }
 
 1;
@@ -202,6 +237,13 @@ is used here where it seems to make more sense. It's possible to use
 normal notation just fine:
 
   $bot->pattern 'hello' => 'hi!';
+
+If you leave out the object entirely:
+
+  pattern 'hello' => 'hi!';
+
+then it will use a global singleton. This is good for getting started
+or simple applications.
 
 =head2 pattern
 

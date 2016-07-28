@@ -5,56 +5,46 @@ use ChatBot::Simple;
 no warnings 'uninitialized';
 
 my %mem;
-my $bot;
 
-sub bot {
-    my $class = shift;
-    $bot = shift;
-    load_bot();
-}
+context '';
 
-sub load_bot {
-    context $bot '';
+transform 'hello' => 'hi';
 
-    transform $bot 'hello' => 'hi';
+pattern 'hi' => sub {
+    my ( $input, $param ) = @_;
+    if ( context() ne 'name' ) {
+        context 'name';
+        return "hi! what's your name?";
+    }
+    return;
+};
 
-    pattern $bot 'hi' => sub {
-        my ( $input, $param ) = @_;
-        if ( $bot->context ne 'name' ) {
-            context $bot 'name';
-            return "hi! what's your name?";
-        }
-        return;
-    };
+context 'name';
 
-    context $bot 'name';
+pattern "my name is :name" => sub {
+    my ( $input, $param ) = @_;
+    $mem{name} = $param->{':name'};
 
-    pattern $bot "my name is :name" => sub {
-        my ( $input, $param ) = @_;
-        $mem{name} = $param->{':name'};
+    context 'how_are_you';
+    return "Hello, $mem{name}! How are you?";
+};
 
-        context $bot 'how_are_you';
-        return "Hello, $mem{name}! How are you?";
-    };
+transform 'goodbye', 'bye-bye', 'sayonara' => 'bye';
 
-    transform $bot 'goodbye', 'bye-bye', 'sayonara' => 'bye';
+pattern 'bye' => 'bye!';
 
-    pattern $bot 'bye' => 'bye!';
+context 'how_are_you';
 
-    context $bot 'how_are_you';
+pattern 'fine' => 'great!';
 
-    pattern $bot 'fine' => 'great!';
-
-    pattern $bot qr{^(\w+)$} => sub {
-      my ($input,$param) = @_;
-      if ($bot->context eq 'name') {
+pattern qr{^(\w+)$} => sub {
+    my ( $input, $param ) = @_;
+    if ( $bot->context eq 'name' ) {
         $mem{name} = $param->{':1'};
-        context $bot 'how_are_you';
+        context 'how_are_you';
         return "Hello, $mem{name}! How are you?";
-      }
-      return;
-    } => "I don't understand that!";
-
-}
+    }
+    return;
+} => "I don't understand that!";
 
 1;
