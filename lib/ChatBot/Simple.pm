@@ -22,7 +22,6 @@ sub new {
 
 sub pattern {
     @_ = get_right_object(@_);
-warn @_;
     my ($self, $pattern, @rest) = @_;
 
     my $code = ref $rest[0] eq 'CODE' ? shift @rest : undef;
