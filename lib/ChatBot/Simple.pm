@@ -141,27 +141,29 @@ sub process_pattern {
     @_ = get_right_object(@_);
     my ($self, $input) = @_;
 
-    for my $pt (@{ $self->{patterns}{$self->{context}} }) {
-        my $match = $self->match($input, $pt->{pattern});
-        next if !$match;
+    for my $context ('global', $self->{context}, 'fallback') {
+        for my $pt (@{ $self->{patterns}{$self->{context}} }) {
+            my $match = $self->match($input, $pt->{pattern});
+            next if !$match;
 
-        my $response;
+            my $response;
 
-        if ( $pt->{code} and ref $pt->{code} eq 'CODE' ) {
-            $response = $pt->{code}( $input, $match );
+            if ( $pt->{code} and ref $pt->{code} eq 'CODE' ) {
+                $response = $pt->{code}( $input, $match );
+            }
+
+            $response //= $pt->{response};
+
+            if ( ref $response eq 'ARRAY' ) {
+
+                # deal with multiple responses
+                $response = $response->[ rand( scalar(@$response) ) ];
+            }
+
+            my $response_interpolated = $self->replace_vars( $response, $match );
+
+            return $response_interpolated;
         }
-
-        $response //= $pt->{response};
-
-        if ( ref $response eq 'ARRAY' ) {
-
-            # deal with multiple responses
-            $response = $response->[ rand( scalar(@$response) ) ];
-        }
-
-        my $response_interpolated = $self->replace_vars( $response, $match );
-
-        return $response_interpolated;
     }
 
     warn "Couldn't find a match for '$input' (context = '$self->{context}')\n";
