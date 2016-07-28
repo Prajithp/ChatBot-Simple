@@ -39,7 +39,7 @@ pattern 'fine' => 'great!';
 
 pattern qr{^(\w+)$} => sub {
     my ( $input, $param ) = @_;
-    if ( $bot->context eq 'name' ) {
+    if ( context() eq 'name' ) {
         $mem{name} = $param->{':1'};
         context 'how_are_you';
         return "Hello, $mem{name}! How are you?";

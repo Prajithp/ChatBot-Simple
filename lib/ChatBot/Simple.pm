@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Exporter qw( import );
-use Smart::Comments;
 
 use base qw( Class::Accessor );
 
@@ -56,7 +55,8 @@ sub transform {
 }
 
 sub match {
-    my ( $input, $pattern ) = @_;
+    @_ = get_right_object(@_);
+    my ( $self, $input, $pattern ) = @_;
 
     # regex match
     if ( ref $pattern eq 'Regexp' ) {
@@ -85,7 +85,7 @@ sub match {
         my %result = map { $_ => shift @matches } @named_vars;
 
         # override memory with new information
-        %memory = ( %memory, %result );
+        $self->{memory} = { %{ $self->{memory} //{} }, %result };
 
         return \%result;
     }
@@ -94,9 +94,10 @@ sub match {
 }
 
 sub replace_vars {
-    my ( $pattern, $named_vars ) = @_;
+    @_ = get_right_object(@_);
+    my ( $self, $pattern, $named_vars ) = @_;
 
-    my %vars = ( %memory, %{$named_vars} );
+    my %vars = ( %{ $self->{memory} //{} }, %{$named_vars} );
 
     for my $var ( keys %vars ) {
         next if $var eq '';
@@ -115,13 +116,13 @@ sub process_transform {
     my ($self, $str) = @_;
 
     for my $tr (@{ $self->{transforms}{$self->{context}} }) {
-        next unless match( $str, $tr->{pattern} );
+        next unless $self->match( $str, $tr->{pattern} );
         if ( ref $tr->{code} eq 'CODE' ) {
             warn "Transform code not implemented\n";
         }
 
         my $input = $tr->{pattern};
-        my $vars = match( $str, $input );
+        my $vars = $self->match( $str, $input );
 
         if ($vars) {
             my $input = replace_vars( $tr->{pattern}, $vars );
@@ -213,18 +214,16 @@ ChatBot::Simple - new and flexible chatbot engine in Perl
 
   use ChatBot::Simple;
 
-  my $bot = ChatBot::Simple->new;
-
   # simple pattern/response
-  pattern $bot 'hello' => 'hi!';
-  pattern $bot "what is your name?" => "my name is ChatBot::Simple";
+  pattern 'hello' => 'hi!';
+  pattern "what is your name?" => "my name is ChatBot::Simple";
 
   # simple transformations
-  transform $bot "what's" => "what is";
+  transform "what's" => "what is";
 
   # simple responses
-  $bot->process("hello");
-  $bot->process("what's your name?");
+  process("hello");
+  process("what's your name?");
 
   # and much more!
 
@@ -237,21 +236,13 @@ going to use the powerful text manipulation capabilities of Perl.
 
 =head1 METHODS
 
-Indirect notation, for example
+You can either refer to these methods through an object:
 
-  pattern $bot 'hello' => 'hi!';
+    my $bot = ChatBot::Simple->new;
+    $bot->process("hello");
 
-is used here where it seems to make more sense. It's possible to use
-normal notation just fine:
-
-  $bot->pattern 'hello' => 'hi!';
-
-If you leave out the object entirely:
-
-  pattern 'hello' => 'hi!';
-
-then it will use a global singleton. This is good for getting started
-or simple applications.
+Or directly in your namespace, like below. In this case it'll
+automatically use a global object.
 
 =head2 pattern
 

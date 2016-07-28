@@ -24,7 +24,7 @@ for my $test (@test) {
     my $pattern  = $test->{pattern};
     my $transform = $test->{transform};
 
-    transform $bot $pattern => $transform;
+    $bot->transform($pattern => $transform);
 }
 
 my $transforms = $bot->transforms();

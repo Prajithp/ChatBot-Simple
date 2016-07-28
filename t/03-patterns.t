@@ -25,7 +25,7 @@ for my $test (@test) {
     my $pattern  = $test->{pattern};
     my $response = $test->{response};
 
-    pattern $bot $pattern => $response;
+    $bot->pattern($pattern => $response);
 }
 
 # test if setup worked

@@ -14,9 +14,9 @@ my $bot = ChatBot::Simple->new;
 plan tests => 3;
 
 my $count = 0;
-pattern $bot 'count' => sub {
+$bot->pattern('count' => sub {
   return ++$count;
-};
+});
 
 for my $i (1..3) {
   my $response = $bot->process_pattern('count');

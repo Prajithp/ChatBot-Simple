@@ -44,20 +44,20 @@ my @tests = (
 
 # now we implement the rules above
 
-transform $bot "what's" => "what is";
+$bot->transform("what's" => "what is");
 
 my %var;
 
-pattern $bot "define :variable as :value" => sub {
+$bot->pattern("define :variable as :value" => sub {
   my ($str,$param) = @_;
 
   my ($variable,$value) = ($param->{':variable'}, $param->{':value'});
   $var{$variable} = $value;
 
   return;
-} => "ok";
+} => "ok");
 
-pattern $bot "what is :num1 :op :num2" => sub {
+$bot->pattern("what is :num1 :op :num2" => sub {
     my ($str,$param) = @_;
 
     my ($num1,$op,$num2) = ($param->{':num1'}, $param->{':op'}, $param->{':num2'});
@@ -76,7 +76,7 @@ pattern $bot "what is :num1 :op :num2" => sub {
          : $op eq '*' ? $num1 * $num2
          : $op eq '/' ? $num1 / $num2
          : "I don't know how to calculate that";
-};
+});
 
 
 plan tests => scalar @tests;

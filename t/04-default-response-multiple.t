@@ -13,7 +13,7 @@ my $bot = ChatBot::Simple->new;
 
 plan tests => 3;
 
-pattern $bot 'hi' => [ 'hi!', 'hello!', 'howdy?' ];
+$bot->pattern('hi' => [ 'hi!', 'hello!', 'howdy?' ]);
 
 srand(1);
 

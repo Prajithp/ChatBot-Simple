@@ -13,7 +13,7 @@ my $bot = ChatBot::Simple->new;
 
 plan tests => 1;
 
-pattern $bot 'hi' => 'hi!';
+$bot->pattern('hi' => 'hi!');
 
 my $response = $bot->process_pattern('hi');
 

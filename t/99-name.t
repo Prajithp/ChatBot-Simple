@@ -42,13 +42,13 @@ my @tests = (
 
 my %mem;
 
-transform $bot "what's" => "what is";
+$bot->transform("what's" => "what is");
 
-transform $bot "I'm" => "I am";
+$bot->transform("I'm" => "I am");
 
-transform $bot "I am called :name" => "my name is :name";
+$bot->transform("I am called :name" => "my name is :name");
 
-pattern $bot "my name is :name" => sub {
+$bot->pattern("my name is :name" => sub {
   my ($str,$param) = @_;
 
   my $old_name = $mem{name};
@@ -59,12 +59,12 @@ pattern $bot "my name is :name" => sub {
   }
 
   return;
-} => "ok";
+} => "ok");
 
-pattern $bot "what is my name" => sub {
+$bot->pattern("what is my name" => sub {
   my ($str,$param) = @_;
   return $mem{name} ? "your name is $mem{name}" : "I don't know";
-};
+});
 
 plan tests => scalar @tests;
 
