@@ -19,21 +19,22 @@ sub load_bot {
     transform $bot 'hello' => 'hi';
 
     pattern $bot 'hi' => sub {
-      my ($input, $param) = @_;
-      if ($bot->context ne 'name') {
-        context $bot 'name';
-        return "hi! what's your name?";
-      }
-      return;
+        my ( $input, $param ) = @_;
+        if ( $bot->context ne 'name' ) {
+            context $bot 'name';
+            return "hi! what's your name?";
+        }
+        return;
     };
 
     context $bot 'name';
 
     pattern $bot "my name is :name" => sub {
-      my ($input,$param) = @_;
-      $mem{name} = $param->{':name'};
-      context $bot 'how_are_you';
-      return "Hello, :name! How are you?";
+        my ( $input, $param ) = @_;
+        $mem{name} = $param->{':name'};
+
+        context $bot 'how_are_you';
+        return "Hello, $mem{name}! How are you?";
     };
 
     transform $bot 'goodbye', 'bye-bye', 'sayonara' => 'bye';
