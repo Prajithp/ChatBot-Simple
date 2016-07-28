@@ -32,6 +32,7 @@ sub pattern {
         response => $response,
         code     => $code,
     };
+
 }
 
 sub transform {
@@ -95,9 +96,10 @@ sub match {
 
 sub replace_vars {
     @_ = get_right_object(@_);
+
     my ( $self, $pattern, $named_vars ) = @_;
 
-    my %vars = ( %{ $self->{memory} //{} }, %{$named_vars} );
+    my %vars = ( %{ $self->{memory} // {} }, %{$named_vars} );
 
     for my $var ( keys %vars ) {
         next if $var eq '';
@@ -125,9 +127,9 @@ sub process_transform {
         my $vars = $self->match( $str, $input );
 
         if ($vars) {
-            my $input = replace_vars( $tr->{pattern}, $vars );
+            my $input = $self->replace_vars( $tr->{pattern}, $vars );
             $str =~ s/$input/$tr->{transform}/g;
-            $str = replace_vars( $str, $vars );
+            $str = $self->replace_vars( $str, $vars );
         }
     }
 
@@ -140,7 +142,7 @@ sub process_pattern {
     my ($self, $input) = @_;
 
     for my $pt (@{ $self->{patterns}{$self->{context}} }) {
-        my $match = match($input, $pt->{pattern});
+        my $match = $self->match($input, $pt->{pattern});
         next if !$match;
 
         my $response;
@@ -157,7 +159,7 @@ sub process_pattern {
             $response = $response->[ rand( scalar(@$response) ) ];
         }
 
-        my $response_interpolated = replace_vars( $response, $match );
+        my $response_interpolated = $self->replace_vars( $response, $match );
 
         return $response_interpolated;
     }

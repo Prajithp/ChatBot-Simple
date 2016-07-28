@@ -4,47 +4,26 @@ use ChatBot::Simple;
 
 no warnings 'uninitialized';
 
-my %mem;
+{
+    context '';
 
-context '';
+    transform 'hello' => 'hi';
+    transform 'goodbye', 'bye-bye', 'sayonara' => 'bye';
 
-transform 'hello' => 'hi';
+    pattern 'hi'  => sub { context 'name' } => "hi! what's your name?";
+    pattern 'bye' => 'bye!';
+}
 
-pattern 'hi' => sub {
-    my ( $input, $param ) = @_;
-    if ( context() ne 'name' ) {
-        context 'name';
-        return "hi! what's your name?";
-    }
-    return;
-};
+{
+    context 'name';
+    pattern "my name is :name" => sub { context 'how_are_you' } => "Hello, :name! How are you?";
+}
 
-context 'name';
-
-pattern "my name is :name" => sub {
-    my ( $input, $param ) = @_;
-    $mem{name} = $param->{':name'};
-
+{
     context 'how_are_you';
-    return "Hello, $mem{name}! How are you?";
-};
 
-transform 'goodbye', 'bye-bye', 'sayonara' => 'bye';
-
-pattern 'bye' => 'bye!';
-
-context 'how_are_you';
-
-pattern 'fine' => 'great!';
-
-pattern qr{^(\w+)$} => sub {
-    my ( $input, $param ) = @_;
-    if ( context() eq 'name' ) {
-        $mem{name} = $param->{':1'};
-        context 'how_are_you';
-        return "Hello, $mem{name}! How are you?";
-    }
-    return;
-} => "I don't understand that!";
+    pattern 'fine'            => "that's great, :name!";
+    pattern ':something_else' => 'why do you say that?';
+}
 
 1;
