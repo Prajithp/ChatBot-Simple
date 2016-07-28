@@ -9,6 +9,8 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 my @tests = (
   {
     input => "what's 2 + 2",
@@ -42,11 +44,11 @@ my @tests = (
 
 # now we implement the rules above
 
-transform "what's" => "what is";
+transform $bot "what's" => "what is";
 
 my %var;
 
-pattern "define :variable as :value" => sub {
+pattern $bot "define :variable as :value" => sub {
   my ($str,$param) = @_;
 
   my ($variable,$value) = ($param->{':variable'}, $param->{':value'});
@@ -55,7 +57,7 @@ pattern "define :variable as :value" => sub {
   return;
 } => "ok";
 
-pattern "what is :num1 :op :num2" => sub {
+pattern $bot "what is :num1 :op :num2" => sub {
     my ($str,$param) = @_;
 
     my ($num1,$op,$num2) = ($param->{':num1'}, $param->{':op'}, $param->{':num2'});
@@ -80,6 +82,6 @@ pattern "what is :num1 :op :num2" => sub {
 plan tests => scalar @tests;
 
 for my $test (@tests) {
-  my $output = ChatBot::Simple::process($test->{input});
+  my $output = $bot->process($test->{input});
   is($output,$test->{expect},$test->{input} . " -> " . $test->{expect});
 }

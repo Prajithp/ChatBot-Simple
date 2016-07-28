@@ -9,10 +9,12 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 plan tests => 1;
 
-pattern 'my name is :first_name :last_name' => 'Hello, :first_name :last_name';
+pattern $bot 'my name is :first_name :last_name' => 'Hello, :first_name :last_name';
 
-my $response = ChatBot::Simple::process_pattern('my name is Larry Wall');
+my $response = $bot->process_pattern('my name is Larry Wall');
 
 is($response, 'Hello, Larry Wall');

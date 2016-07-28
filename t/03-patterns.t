@@ -9,6 +9,8 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 my @test = (
     {
         pattern  => 'what is your name',
@@ -23,13 +25,13 @@ for my $test (@test) {
     my $pattern  = $test->{pattern};
     my $response = $test->{response};
 
-    pattern $pattern => $response;
+    pattern $bot $pattern => $response;
 }
 
 # test if setup worked
-my @patterns = ChatBot::Simple::patterns();
+my $patterns = $bot->patterns();
 
-my @expected = [
+my $expected = [
     {
         'pattern'  => 'what is your name',
         'response' => 'my name is chatbot',
@@ -37,13 +39,13 @@ my @expected = [
     }
 ];
 
-cmp_deeply( \@patterns, \@expected ) or warn Dumper(@patterns);
+cmp_deeply( $patterns, $expected ) or warn Dumper($patterns);
 
 for my $test (@test) {
     my $pattern  = $test->{pattern};
     my $expected = $test->{response};
 
-    my $response = ChatBot::Simple::process_pattern($pattern);
+    my $response = $bot->process_pattern($pattern);
 
     is($response,$expected);
 }

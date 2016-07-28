@@ -3,24 +3,20 @@ package ChatBot::Simple;
 use strict;
 use warnings;
 
+use base qw( Class::Accessor );
+
 our $VERSION = '0.01';
 
-require Exporter;
-
-our @ISA = qw/Exporter/;
-
-our @EXPORT = qw/pattern transform/;
-
-my (@patterns, @transforms);
+__PACKAGE__->mk_ro_accessors(qw( patterns transforms ));
 
 sub pattern {
-  my ($pattern, @rest) = @_;
+  my ($self, $pattern, @rest) = @_;
 
   my $code = ref $rest[0] eq 'CODE' ? shift @rest : undef;
 
   my $response = shift @rest;
 
-  push @patterns, {
+  push @{ $self->{patterns} }, {
     pattern  => $pattern,
     response => $response,
     code     => $code,
@@ -28,14 +24,14 @@ sub pattern {
 }
 
 sub transform {
-  my (@expr) = @_;
+  my ($self, @expr) = @_;
 
   my $transform_to = pop @expr;
 
   my $code = ref $expr[-1] eq 'CODE' ? pop @expr : undef;
 
   for my $exp (@expr) {
-    push @transforms, {
+    push @{ $self->{transforms} }, {
       pattern   => $exp,
       transform => $transform_to,
       code      => $code,
@@ -91,9 +87,9 @@ sub replace_vars {
 }
 
 sub process_transform {
-  my $str = shift;
+  my ($self, $str) = @_;
 
-  for my $tr (@transforms) {
+  for my $tr (@{ $self->{transforms} }) {
     next unless match($str, $tr->{pattern});
     if (ref $tr->{code} eq 'CODE') {
       warn "Transform code not implemented\n";
@@ -113,9 +109,9 @@ sub process_transform {
 }
 
 sub process_pattern {
-  my $input = shift;
+  my ($self, $input) = @_;
 
-  for my $pt (@patterns) {
+  for my $pt (@{ $self->{patterns} }) {
     my $match = match($input, $pt->{pattern});
     next if !$match;
 
@@ -142,18 +138,10 @@ sub process_pattern {
 }
 
 sub process {
-  my $input = shift;
-  my $tr  = process_transform($input);
-  my $res = process_pattern($tr);
+  my ($self, $input) = @_;
+  my $tr  = $self->process_transform($input);
+  my $res = $self->process_pattern($tr);
   return $res;
-}
-
-sub patterns {
-  return \@patterns;
-}
-
-sub transforms {
-  return \@transforms;
 }
 
 1;
@@ -168,16 +156,18 @@ ChatBot::Simple - new and flexible chatbot engine in Perl
 
   use ChatBot::Simple;
 
+  my $bot = ChatBot::Simple->new;
+
   # simple pattern/response
-  pattern 'hello' => 'hi!';
-  pattern "what is your name?" => "my name is ChatBot::Simple";
+  pattern $bot 'hello' => 'hi!';
+  pattern $bot "what is your name?" => "my name is ChatBot::Simple";
 
   # simple transformations
-  transform "what's" => "what is";
+  transform $bot "what's" => "what is";
 
   # simple responses
-  process("hello");
-  process("what's your name?");
+  $bot->process("hello");
+  $bot->process("what's your name?");
 
   # and much more!
 
@@ -190,30 +180,39 @@ going to use the powerful text manipulation capabilities of Perl.
 
 =head1 METHODS
 
+Indirect notation, for example
+
+  pattern $bot 'hello' => 'hi!';
+
+is used here where it seems to make more sense. It's possible to use
+normal notation just fine:
+
+  $bot->pattern 'hello' => 'hi!';
+
 =head2 pattern
 
 pattern is used to register response patterns:
 
-  pattern 'hello' => 'hi!';
+  pattern $bot 'hello' => 'hi!';
 
 =head2 transform
 
 transform is used to register text normalizations:
 
-  transform "what's" => "what is";
+  transform $bot "what's" => "what is";
 
 Like C<pattern>, you can use named variables and code:
 
-  transform "I am called :name" => "my name is :name";
+  transform $bot "I am called :name" => "my name is :name";
 
-  transform "foo" => sub {
+  transform $bot "foo" => sub {
     # ...
   } => "bar";
 
 Differently from C<pattern>, you can specify multiple transformations
 at once:
 
-  transform "goodbye", "byebye", "hasta la vista", "sayonara" => "bye";
+  transform $bot "goodbye", "byebye", "hasta la vista", "sayonara" => "bye";
 
 =head2 process
 
@@ -224,24 +223,24 @@ patterns, and return a response.
 
 =head2 Multiple (random) responses:
 
-  pattern 'hello' => [ 'hi!', 'hello!', 'what\'s up?' ];
+  pattern $bot 'hello' => [ 'hi!', 'hello!', 'what\'s up?' ];
 
 =head2 Named variables
 
-  pattern "my name is :name" => "hello, :name!";
+  pattern $bot "my name is :name" => "hello, :name!";
 
 =head2 Code execution
 
   my %mem;
 
-  pattern "my name is :name" => sub {
+  pattern $bot "my name is :name" => sub {
     my ($input,$param) = @_;
     $mem{name} = $param->{name};
   } => "nice to meet you, :name!";
 
 =head2 Regular expressions
 
-  pattern qr{what is (\d+) ([+-/*]) (\d+)} => sub {
+  pattern $bot qr{what is (\d+) ([+-/*]) (\d+)} => sub {
     my ($input,$param) = @_;
     my ($n1,$op,$n2) = ($param->{1}, $param->{2}, $param->{3});
     # ...

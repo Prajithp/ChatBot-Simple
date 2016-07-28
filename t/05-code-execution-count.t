@@ -9,14 +9,16 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 plan tests => 3;
 
 my $count = 0;
-pattern 'count' => sub {
+pattern $bot 'count' => sub {
   return ++$count;
 };
 
 for my $i (1..3) {
-  my $response = ChatBot::Simple::process_pattern('count');
+  my $response = $bot->process_pattern('count');
   is($response, $i);
 }

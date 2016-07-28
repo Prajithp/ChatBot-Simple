@@ -9,23 +9,25 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 plan tests => 3;
 
-pattern 'hi' => [ 'hi!', 'hello!', 'howdy?' ];
+pattern $bot 'hi' => [ 'hi!', 'hello!', 'howdy?' ];
 
 srand(1);
 
 {
-  my $response = ChatBot::Simple::process_pattern('hi');
+  my $response = $bot->process_pattern('hi');
   is($response, 'hi!');
 }
 
 {
-  my $response = ChatBot::Simple::process_pattern('hi');
+  my $response = $bot->process_pattern('hi');
   is($response, 'hello!');
 }
 
 {
-  my $response = ChatBot::Simple::process_pattern('hi');
+  my $response = $bot->process_pattern('hi');
   is($response, 'howdy?');
 }

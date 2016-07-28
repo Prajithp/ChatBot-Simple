@@ -9,6 +9,8 @@ use Data::Dumper;
 
 use ChatBot::Simple;
 
+my $bot = ChatBot::Simple->new;
+
 my @tests = (
   {
     input => "what's my name?",
@@ -40,13 +42,13 @@ my @tests = (
 
 my %mem;
 
-transform "what's" => "what is";
+transform $bot "what's" => "what is";
 
-transform "I'm" => "I am";
+transform $bot "I'm" => "I am";
 
-transform "I am called :name" => "my name is :name";
+transform $bot "I am called :name" => "my name is :name";
 
-pattern "my name is :name" => sub {
+pattern $bot "my name is :name" => sub {
   my ($str,$param) = @_;
 
   my $old_name = $mem{name};
@@ -59,7 +61,7 @@ pattern "my name is :name" => sub {
   return;
 } => "ok";
 
-pattern "what is my name" => sub {
+pattern $bot "what is my name" => sub {
   my ($str,$param) = @_;
   return $mem{name} ? "your name is $mem{name}" : "I don't know";
 };
@@ -67,6 +69,6 @@ pattern "what is my name" => sub {
 plan tests => scalar @tests;
 
 for my $test (@tests) {
-  my $output = ChatBot::Simple::process($test->{input});
+  my $output = $bot->process($test->{input});
   is($output,$test->{expect},$test->{input} . " -> " . $test->{expect});
 }
