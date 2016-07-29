@@ -8,7 +8,7 @@ use Exporter qw( import );
 use base qw( Class::Accessor );
 
 our $VERSION = '0.01';
-our @EXPORT = qw( context pattern transform process );
+our @EXPORT = qw( context pattern transform process flags );
 
 my $singleton;
 
@@ -16,7 +16,7 @@ __PACKAGE__->mk_ro_accessors(qw( patterns transforms ));
 
 sub new {
     my ($class) = shift;
-    return $class->SUPER::new({context => '', @_});
+    return $class->SUPER::new({context => '', flags => {},  @_});
 }
 
 sub pattern {
@@ -153,7 +153,7 @@ sub process_pattern {
     my ($self, $input) = @_;
 
     for my $context ('global', $self->{context}, 'fallback') {
-        for my $pt (@{ $self->{patterns}{$self->{context}} }) {
+        for my $pt (@{ $self->{patterns}{$context} }) {
             my $match = $self->match($input, $pt->{pattern});
             next if !$match;
 
@@ -173,6 +173,10 @@ sub process_pattern {
 
             if ( $pt->{change_context} ) {
                 $self->{context} = $pt->{change_context};
+            }
+
+            if ( $pt->{set_flag} ) {
+                $self->{flags}{ $pt->{set_flag} } = 1;
             }
 
             my $response_interpolated = $self->replace_vars( $response, $match );
@@ -222,6 +226,15 @@ sub context {
     return $self->{context};
 }
 
+sub flags {
+    @_ = get_right_object(@_);
+    my ($self) = @_;
+
+    my $f = $self->{flags};
+    $self->{flags} = {};
+    return $f;
+}
+
 1;
 
 __END__
@@ -268,26 +281,26 @@ automatically use a global object.
 
 pattern is used to register response patterns:
 
-  pattern $bot 'hello' => 'hi!';
+  pattern 'hello' => 'hi!';
 
 =head2 transform
 
 transform is used to register text normalizations:
 
-  transform $bot "what's" => "what is";
+  transform "what's" => "what is";
 
 Like C<pattern>, you can use named variables and code:
 
-  transform $bot "I am called :name" => "my name is :name";
+  transform "I am called :name" => "my name is :name";
 
-  transform $bot "foo" => sub {
+  transform "foo" => sub {
     # ...
   } => "bar";
 
 Differently from C<pattern>, you can specify multiple transformations
 at once:
 
-  transform $bot "goodbye", "byebye", "hasta la vista", "sayonara" => "bye";
+  transform "goodbye", "byebye", "hasta la vista", "sayonara" => "bye";
 
 =head2 process
 
@@ -298,29 +311,40 @@ patterns, and return a response.
 
 =head2 Multiple (random) responses:
 
-  pattern $bot 'hello' => [ 'hi!', 'hello!', 'what\'s up?' ];
+  pattern 'hello' => [ 'hi!', 'hello!', 'what\'s up?' ];
 
 =head2 Named variables
 
-  pattern $bot "my name is :name" => "hello, :name!";
+  pattern "my name is :name" => "hello, :name!";
 
 =head2 Code execution
 
   my %mem;
 
-  pattern $bot "my name is :name" => sub {
+  pattern "my name is :name" => code => sub {
     my ($input,$param) = @_;
     $mem{name} = $param->{name};
-  } => "nice to meet you, :name!";
+  }, response => "nice to meet you, :name!";
 
 =head2 Regular expressions
 
-  pattern $bot qr{what is (\d+) ([+-/*]) (\d+)} => sub {
+  pattern qr{what is (\d+) ([+-/*]) (\d+)} => sub {
     my ($input,$param) = @_;
     my ($n1,$op,$n2) = ($param->{1}, $param->{2}, $param->{3});
     # ...
     return $result;
   };
+
+=head2 Flags
+
+  pattern 'bye' =>
+    response => 'bye!',
+    set_flag => 'quit';
+
+And elsewhere...
+
+  my $flags = flags();
+  exit if $flags->{quit};
 
 (See more examples in the C<t/> directory)
 

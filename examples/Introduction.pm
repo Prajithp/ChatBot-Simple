@@ -32,8 +32,10 @@ no warnings 'uninitialized';
 {
     context 'global';
 
-    transform 'goodbye', 'bye-bye', 'sayonara' => 'bye';
-    pattern 'bye' => 'bye!';
+    transform ['goodbye', 'bye-bye', 'sayonara'] => 'bye';
+    pattern 'bye' =>
+        response => 'bye!',
+        set_flag => 'quit';
 }
 
 1;

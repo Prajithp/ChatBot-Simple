@@ -11,11 +11,13 @@ use Calculator;
 
 context '';
 
-print "> ";
-while (my $input = <>) {
-  chomp $input;
+print context . "> ";
+while ( my $input = <> ) {
+    chomp $input;
 
-  my $response = process $input;
+    my $response = process $input;
 
-  print "$response\n\n" . context . "> ";
+    print "$response\n\n";
+    exit if ( %{ flags() }{quit} );
+    print "> ";
 }
