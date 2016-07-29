@@ -7,7 +7,9 @@ no warnings 'uninitialized';
 {
     context '';
 
-    pattern [ 'hi', 'hello' ]  => sub { context 'name' } => "hi! what's your name?";
+    pattern [ 'hi', 'hello' ]  => 
+        response => "hi! what's your name?", 
+        change_context => 'name';
 }
 
 {
@@ -15,7 +17,9 @@ no warnings 'uninitialized';
 
     transform [ "i'm :name", "call me :name" ] => 'my name is :name';
 
-    pattern "my name is :name" => sub { context 'how_are_you' } => "Hello, :name! How are you?";
+    pattern "my name is :name" => 
+        response => "Hello, :name! How are you?",
+        change_context => 'how_are_you';
 }
 
 {

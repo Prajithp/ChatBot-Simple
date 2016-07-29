@@ -24,15 +24,24 @@ sub pattern {
     my ($self, $pattern, @rest) = @_;
 
     my @patterns = ref $pattern eq 'ARRAY' ? @{$pattern} : ($pattern);
-    my $code     = ref $rest[0] eq 'CODE'  ? shift @rest : undef;
 
-    my $response = shift @rest;
+    my ($response, $code, %rest);
+    if ( @rest == 1 ) {
+        %rest     = ();
+        $response = shift @rest;
+    } else {
+        %rest     = @rest;
+        $response = delete $rest{response};
+        $code     = delete $rest{code};
+    }
+    $code = ref $response eq 'CODE'  ? $response : $code;
 
     for my $pattern (@patterns) {
         push @{ $self->{patterns}{$self->{context}} }, {
             pattern  => $pattern,
             response => $response,
             code     => $code,
+            %rest
         };
     }
 }
@@ -55,7 +64,6 @@ sub transform {
             code      => $code,
           };
     }
-
 }
 
 sub match {
@@ -163,6 +171,10 @@ sub process_pattern {
                 $response = $response->[ rand( scalar(@$response) ) ];
             }
 
+            if ( $pt->{change_context} ) {
+                $self->{context} = $pt->{change_context};
+            }
+
             my $response_interpolated = $self->replace_vars( $response, $match );
 
             return $response_interpolated;
@@ -178,6 +190,7 @@ sub process_pattern {
 sub process {
     @_ = get_right_object(@_);
     my ($self, $input) = @_;
+
     my $tr  = $self->process_transform($input);
     my $res = $self->process_pattern($tr);
     return $res;

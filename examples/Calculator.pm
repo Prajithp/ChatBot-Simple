@@ -8,11 +8,12 @@ my %var;
 
 context '';
 
-pattern qr{(\w+)\s*\=\s*(\d+)} => sub {
+pattern qr{(\w+)\s*\=\s*(\d+)} => code => sub {
     my ( $input, $param ) = @_;
     $var{ $param->{':1'} } = $param->{':2'};
+warn "Saved $param->{':1'} as $param->{':2'}";
     return;
-} => 'ok';
+}, response => 'ok';
 
 pattern qr{(\d+|\w+)\s*([\+\-\*\/])\s*(\d+|\w+)} => sub {
     my ( $input, $param ) = @_;
