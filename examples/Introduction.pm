@@ -7,13 +7,14 @@ no warnings 'uninitialized';
 {
     context '';
 
-    transform 'hello' => 'hi';
-
-    pattern 'hi'  => sub { context 'name' } => "hi! what's your name?";
+    pattern [ 'hi', 'hello' ]  => sub { context 'name' } => "hi! what's your name?";
 }
 
 {
     context 'name';
+
+    transform [ "i'm :name", "call me :name" ] => 'my name is :name';
+
     pattern "my name is :name" => sub { context 'how_are_you' } => "Hello, :name! How are you?";
 }
 

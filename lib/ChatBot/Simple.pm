@@ -23,36 +23,39 @@ sub pattern {
     @_ = get_right_object(@_);
     my ($self, $pattern, @rest) = @_;
 
-    my $code = ref $rest[0] eq 'CODE' ? shift @rest : undef;
+    my @patterns = ref $pattern eq 'ARRAY' ? @{$pattern} : ($pattern);
+    my $code     = ref $rest[0] eq 'CODE'  ? shift @rest : undef;
 
     my $response = shift @rest;
 
-    push @{ $self->{patterns}{$self->{context}} }, {
-        pattern  => $pattern,
-        response => $response,
-        code     => $code,
-    };
-
+    for my $pattern (@patterns) {
+        push @{ $self->{patterns}{$self->{context}} }, {
+            pattern  => $pattern,
+            response => $response,
+            code     => $code,
+        };
+    }
 }
 
 sub transform {
     @_ = get_right_object(@_);
-    my ($self, @expr) = @_;
+    my ($self, $pattern, @rest) = @_;
 
-    my $transform_to = pop @expr;
+    my @patterns = ref $pattern eq 'ARRAY' ? @{$pattern} : ($pattern);
+    my $code     = ref $rest[0] eq 'CODE'  ? shift @rest : undef;
 
-    my $code = ref $expr[-1] eq 'CODE' ? pop @expr : undef;
+    my $transform_to = shift @rest;
 
     $self->{transforms}{$self->{context}} //= [];
-
-    for my $exp (@expr) {
+    for my $pattern (@patterns) {
         push @{ $self->{transforms}{$self->{context}} },
           {
-            pattern   => $exp,
+            pattern   => $pattern,
             transform => $transform_to,
             code      => $code,
           };
     }
+
 }
 
 sub match {
